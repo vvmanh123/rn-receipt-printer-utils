@@ -6,10 +6,8 @@
 
 
 #import "RNNetPrinter.h"
-#import "adapters/epson/NetPrinterEpsonAdapter.h"
 #import "adapters/generic/NetPrinterGenericAdapter.h"
 #import "utils/NSDataAdditions.h"
-#import "utils/EpsonUtils.h"
 
 @implementation RNNetPrinter
 
@@ -27,14 +25,8 @@ RCT_EXPORT_METHOD(connectAndSend:(NSString *)host
                   success:(RCTResponseSenderBlock)successCallback
                   fail:(RCTResponseSenderBlock)errorCallback) {
     @try {
-        if ([brand  isEqual: @"EPSON"]) {
-            NetPrinterEpsonAdapter *adapter = [NetPrinterEpsonAdapter alloc];
-            [adapter connectAndSend:host withPort:port printRawData:text success:successCallback fail:errorCallback];
-        }
-        else {
             NetPrinterGenericAdapter *adapter = [NetPrinterGenericAdapter alloc];
             [adapter connectAndSend:host withPort:port printRawData:text success:successCallback fail:errorCallback];
-        }
     } @catch (NSException *exception) {
         errorCallback(@[exception.reason]);
     }
