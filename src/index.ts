@@ -1,4 +1,5 @@
-import { NativeModules, NativeEventEmitter } from 'react-native';
+import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
+import { connectToHost } from './utils/net-connect';
 
 const RNUSBPrinter = NativeModules.RNUSBPrinter;
 const RNBLEPrinter = NativeModules.RNBLEPrinter;
@@ -113,15 +114,32 @@ export const NetPrinter = {
     brand: PrinterBrand
   ): Promise<INetPrinter> => {
     const { promiseOrTimeout, timeoutId } = promiseWithTimeout<INetPrinter>(
-      new Promise((resolve, reject) =>
-        RNNetPrinter.connectAndSend(
-          host,
-          port,
-          data.toString('base64'),
-          brand,
-          (printer: INetPrinter) => resolve(printer),
-          (error: Error) => reject(error)
-        )
+      new Promise(async (resolve, reject) => {
+        if (Platform.OS === 'ios') {
+          try {
+            await connectToHost(host, 2000)
+            RNNetPrinter.connectAndSend(
+              host,
+              port,
+              data.toString('base64'),
+              brand,
+              (printer: INetPrinter) => resolve(printer),
+              (error: Error) => reject(error)
+            )
+          } catch (error) {
+            reject(`Connect to ${host} fail`)
+          }
+        } else {
+          RNNetPrinter.connectAndSend(
+            host,
+            port,
+            data.toString('base64'),
+            brand,
+            (printer: INetPrinter) => resolve(printer),
+            (error: Error) => reject(error)
+          )
+        }
+      }
       )
     );
     return new Promise((resolve, reject) =>
