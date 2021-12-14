@@ -1,8 +1,6 @@
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 import { connectToHost } from './utils/net-connect';
 
-const RNUSBPrinter = NativeModules.RNUSBPrinter;
-const RNBLEPrinter = NativeModules.RNBLEPrinter;
 const RNNetPrinter = NativeModules.RNNetPrinter;
 
 export enum PrinterBrand {
@@ -58,52 +56,6 @@ const promiseWithTimeout = <T>(
     // @ts-ignore
     timeoutId,
   };
-};
-
-export const USBPrinter = {
-  connectAndSend: (
-    vendorId: string,
-    productId: number,
-    data: Buffer,
-    brand: PrinterBrand
-  ): Promise<IUSBPrinter> => {
-    return new Promise((resolve, reject) =>
-      RNUSBPrinter.connectAndSend(
-        vendorId,
-        productId,
-        data.toString('base64'),
-        brand,
-        (printer: IUSBPrinter) => resolve(printer),
-        (error: Error) => reject(error)
-      )
-    );
-  },
-};
-
-export const BLEPrinter = {
-  connectAndSend: (
-    bdAddress: string,
-    data: Buffer,
-    brand: PrinterBrand
-  ): Promise<IBLEPrinter> => {
-    const { promiseOrTimeout, timeoutId } = promiseWithTimeout<IBLEPrinter>(
-      new Promise((resolve, reject) =>
-        RNBLEPrinter.connectAndSend(
-          bdAddress,
-          data.toString('base64'),
-          brand,
-          (printer: IBLEPrinter) => resolve(printer),
-          (error: Error) => reject(error)
-        )
-      )
-    );
-    return new Promise((resolve, reject) =>
-      promiseOrTimeout
-        .then((printer: IBLEPrinter) => resolve(printer))
-        .catch((error: Error) => reject(error))
-        .finally(() => clearTimeout(timeoutId))
-    );
-  },
 };
 
 export const NetPrinter = {
